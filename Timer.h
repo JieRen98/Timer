@@ -9,9 +9,7 @@
 #define USE_TIMER true
 #endif
 
-#include <chrono>
-#include <map>
-#include <memory>
+#include <string>
 
 struct Timer {
     template<typename ...Args>
