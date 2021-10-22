@@ -349,14 +349,14 @@ void Timer::__Reset(const std::string &name) {
 }
 
 void Timer::__ReportAll() {
-    std::cout << "__Report {all} in the recorder (-1 means recorder not stopped):" << std::endl;
+    std::cout << "Report {all} in the recorder (-1 means recorder not stopped):" << std::endl;
     PrintOneNode(RelationTree::root_.get(), "root", -1);
 }
 
 void Timer::__Report(const std::string &name) {
     auto find = RelationTree::plain_nodes_.find(name);
     ExistChecker(find, RelationTree::plain_nodes_.end(), name);
-    std::cout << "__Report {" + name + "} in the recorder (-1 means recorder not stopped):" << std::endl;
+    std::cout << "Report {" + name + "} in the recorder (-1 means recorder not stopped):" << std::endl;
     PrintOneNode(find->second, name, 0);
 }
 
