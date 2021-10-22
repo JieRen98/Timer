@@ -20,9 +20,13 @@ namespace Timer {
         template<typename ...Args>
         Timer(Args&& ...args) = delete;
 
-        static void StartRecording(const std::string &name);
+        enum TimeUnit_t { ns, us, ms, s, m, h };
 
-        static void StartRecording(const std::string &name, const std::string &father_name);
+        static void SetTimeUnit(TimeUnit_t time_unit) { time_unit_ = time_unit; };
+
+        static void StartRecording(const std::string &name, TimeUnit_t=time_unit_);
+
+        static void StartRecording(const std::string &name, const std::string &father_name, TimeUnit_t=time_unit_);
 
         static void StopRecording(const std::string &name);
 
@@ -35,6 +39,10 @@ namespace Timer {
         static void ReportAll();
 
         static void Report(const std::string &name);
+
+    private:
+        // default is "ms"
+        static TimeUnit_t time_unit_;
     };
 }
 
