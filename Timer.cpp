@@ -292,7 +292,7 @@ namespace {
     }
 }
 
-void Timer::SetDefaultTimeUnit(TimeUnit_t time_unit) { time_unit_ = time_unit; }
+void Timer::SetDefaultTimeUnit(TimeUnit_t default_time_unit) { default_time_unit_ = default_time_unit; }
 
 void Timer::StartRecording(const std::string &name, const TimeUnit_t time_unit) {
     if (RelationTree::plain_nodes_.find(name) == RelationTree::plain_nodes_.end()) {
@@ -359,4 +359,4 @@ void Timer::Report(const std::string &name) {
     PrintOneNode(find->second, name, 0);
 }
 
-Timer::TimeUnit_t Timer::time_unit_{ms};
+Timer::TimeUnit_t Timer::default_time_unit_{ms};

@@ -15,11 +15,11 @@ struct Timer {
 
     enum TimeUnit_t { ns, us, ms, s, m, h };
 
-    static void SetDefaultTimeUnit(TimeUnit_t time_unit);
+    static void SetDefaultTimeUnit(TimeUnit_t default_time_unit);
 
-    static void StartRecording(const std::string &name, TimeUnit_t=time_unit_);
+    static void StartRecording(const std::string &name, TimeUnit_t=default_time_unit_);
 
-    static void StartRecording(const std::string &name, const std::string &father_name, TimeUnit_t=time_unit_);
+    static void StartRecording(const std::string &name, const std::string &father_name, TimeUnit_t=default_time_unit_);
 
     static void StopRecording(const std::string &name);
 
@@ -35,7 +35,7 @@ struct Timer {
 
 private:
     // default is "ms"
-    static TimeUnit_t time_unit_;
+    static TimeUnit_t default_time_unit_;
 };
 
 
