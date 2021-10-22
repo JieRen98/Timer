@@ -293,9 +293,9 @@ namespace {
     }
 }
 
-void Timer::SetDefaultTimeUnit(TimeUnit_t default_time_unit) { default_time_unit_ = default_time_unit; }
+void Timer::__SetDefaultTimeUnit(TimeUnit_t default_time_unit) { default_time_unit_ = default_time_unit; }
 
-void Timer::StartRecording(const std::string &name, const TimeUnit_t time_unit) {
+void Timer::__StartRecording(const std::string &name, TimeUnit_t time_unit) {
     if (RelationTree::plain_nodes_.find(name) == RelationTree::plain_nodes_.end()) {
         std::unique_ptr<RelationTree::RelationNode> node_ptr{
                 new RelationTree::RelationNode{RelationTree::root_.get()}};
@@ -308,7 +308,7 @@ void Timer::StartRecording(const std::string &name, const TimeUnit_t time_unit) 
     start_time_[RelationTree::getNodePtr(name)] = std::chrono::system_clock::now();
 }
 
-void Timer::StartRecording(const std::string &name, const std::string &father_name, const TimeUnit_t time_unit) {
+void Timer::__StartRecording(const std::string &name, const std::string &father_name, TimeUnit_t time_unit) {
     auto father_find = RelationTree::plain_nodes_.find(father_name);
     auto find = RelationTree::plain_nodes_.find(name);
     ExistChecker(father_find, RelationTree::plain_nodes_.end(), father_name);
@@ -324,39 +324,39 @@ void Timer::StartRecording(const std::string &name, const std::string &father_na
     start_time_[RelationTree::getNodePtr(name)] = std::chrono::system_clock::now();
 }
 
-void Timer::StopRecording(const std::string &name) {
+void Timer::__StopRecording(const std::string &name) {
     const RelationTree::RelationNode *node_ptr = RelationTree::getNodePtr(name);
     auto end_time_point = std::chrono::system_clock::now();
     ExistChecker(start_time_.find(node_ptr), start_time_.end(), name);
     DurationManager::insertRecord(start_time_.find(node_ptr)->second, end_time_point, node_ptr);
 }
 
-void Timer::Erase(const std::string &name) {
+void Timer::__Erase(const std::string &name) {
     auto find = RelationTree::plain_nodes_.find(name);
     ExistChecker(find, RelationTree::plain_nodes_.end(), name);
     const_cast<RelationTree::RelationNode *>(find->second->parent)->descendants_.erase(name);
     RelationTree::plain_nodes_.erase(name);
 }
 
-void Timer::ResetAll() {
+void Timer::__ResetAll() {
     DurationManager::ResetAll();
 }
 
-void Timer::Reset(const std::string &name) {
+void Timer::__Reset(const std::string &name) {
     auto find = RelationTree::plain_nodes_.find(name);
     ExistChecker(find, RelationTree::plain_nodes_.end(), name);
     DurationManager::Reset(find->second);
 }
 
-void Timer::ReportAll() {
-    std::cout << "Report {all} in the recorder (-1 means recorder not stopped):" << std::endl;
+void Timer::__ReportAll() {
+    std::cout << "__Report {all} in the recorder (-1 means recorder not stopped):" << std::endl;
     PrintOneNode(RelationTree::root_.get(), "root", -1);
 }
 
-void Timer::Report(const std::string &name) {
+void Timer::__Report(const std::string &name) {
     auto find = RelationTree::plain_nodes_.find(name);
     ExistChecker(find, RelationTree::plain_nodes_.end(), name);
-    std::cout << "Report {" + name + "} in the recorder (-1 means recorder not stopped):" << std::endl;
+    std::cout << "__Report {" + name + "} in the recorder (-1 means recorder not stopped):" << std::endl;
     PrintOneNode(find->second, name, 0);
 }
 
