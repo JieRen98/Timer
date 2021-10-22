@@ -5,10 +5,6 @@
 #ifndef TIMER_TIMER_H
 #define TIMER_TIMER_H
 
-#define TIMER_RECORD_TIME_TYPE std::chrono::nanoseconds
-#define TIMER_REPORT_TIME_TYPE std::chrono::milliseconds
-#define TIMER_REPORT_TIME_NAME "ms"
-
 #include <chrono>
 #include <map>
 #include <unordered_map>
