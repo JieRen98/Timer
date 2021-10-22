@@ -42,6 +42,11 @@ namespace Timer {
                 throw std::runtime_error("not exist");
         }
 
+        template<typename Iterator>
+        inline bool ExistCheckerNoThrow(const Iterator &find, const Iterator &end) {
+            return find != end;
+        }
+
         template<typename Map_t, typename Key_t>
         inline auto TryErase(Map_t &map, const Key_t &key) {
             auto find = map.find(key);
@@ -57,7 +62,6 @@ namespace Timer {
                 TryErase(time_unit_map_, node.second.get());
                 TryErase(RelationTree::plain_nodes_, node.first);
             }
-            descendants_.clear();
         }
 
         const RelationTree::RelationNode *RelationTree::getNodePtr(const std::string &name) {
@@ -128,8 +132,8 @@ namespace Timer {
             static int64_t
             getCountWrapper(const std::map<const Node_t *, Duration_t> &duration, const Node_t *node_ptr) {
                 auto find = duration.find(node_ptr);
-                ExistChecker(find, duration.end());
-                return find->second.count();
+                ExistCheckerNoThrow(find, duration.end());
+                return ExistCheckerNoThrow(find, duration.end()) ? find->second.count() : -1;
             }
 
             template<typename Duration_t, typename TimePoint_t, typename Node_t>
@@ -271,15 +275,13 @@ namespace Timer {
         template<typename Node_t>
         void PrintOneNode(const Node_t *root, const std::string &name, int level) {
             if (level >= 0) {
-                if (level > 0)
-                    std::cout
-                            << std::setw(5 * (level - 1) + 1)
-                            << std::setfill(' ')
-                            << '|'
-                            << std::setw(5)
-                            << std::setfill('-');
                 Timer::TimeUnit_t time_unit{time_unit_map_.find(root)->second};
                 std::cout
+                        << std::setw(5 * level + 1)
+                        << std::setfill(' ')
+                        << '|'
+                        << std::setw(5)
+                        << std::setfill('-')
                         << name
                         << ": "
                         << DurationManager::getCount(time_unit, root)
@@ -343,14 +345,14 @@ namespace Timer {
     }
 
     void Timer::ReportAll() {
-        std::cout << "Report all the results in the recorder:" << std::endl;
+        std::cout << "Report {all} in the recorder (-1 means recorder not stopped):" << std::endl;
         PrintOneNode(RelationTree::root_.get(), "root", -1);
     }
 
     void Timer::Report(const std::string &name) {
         auto find = RelationTree::plain_nodes_.find(name);
         ExistChecker(find, RelationTree::plain_nodes_.end(), name);
-        std::cout << "Report {" + name + "} in the recorder:" << std::endl;
+        std::cout << "Report {" + name + "} in the recorder (-1 means recorder not stopped):" << std::endl;
         PrintOneNode(find->second, name, 0);
     }
 
