@@ -2,7 +2,6 @@
 // Created by Jie Ren (jieren9806@gmail.com) on 2021/10/21.
 //
 
-#if USE_TIMER
 #include <iostream>
 #include <iomanip>
 #include <vector>
@@ -361,4 +360,3 @@ void Timer::__Report(const std::string &name) {
 }
 
 Timer::TimeUnit_t Timer::default_time_unit_{ms};
-#endif
