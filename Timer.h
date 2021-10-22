@@ -17,6 +17,9 @@
 
 namespace Timer {
     struct Timer {
+        template<typename ...Args>
+        Timer(Args&& ...args) = delete;
+
         static void StartRecording(const std::string &name);
 
         static void StartRecording(const std::string &name, const std::string &father_name);
