@@ -159,6 +159,7 @@ target_link_libraries(main utils)
 
 add_definitions(-DUSE_TIMER=true)
 add_library(Timer SHARED Timer.cpp)
+target_link_libraries(utils Timer)
 target_link_libraries(main Timer)
 ```
 The result would be:
