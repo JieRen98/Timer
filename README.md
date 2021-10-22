@@ -128,13 +128,13 @@ int main() {
 
 void sleep100ms() {
     Timer::StartRecording("run-sleep100ms", "run");
-    std::this_thread::sleep_for(std::chrono::seconds{1});
+    std::this_thread::sleep_for(std::chrono::milliseconds{100});
     Timer::StopRecording("run-sleep100ms");
 }
 
 void sleep200ms() {
     Timer::StartRecording("run-sleep200ms", "run");
-    std::this_thread::sleep_for(std::chrono::seconds{1});
+    std::this_thread::sleep_for(std::chrono::milliseconds{200});
     Timer::StopRecording("run-sleep200ms");
 }
 
