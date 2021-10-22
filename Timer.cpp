@@ -39,14 +39,6 @@ namespace Timer {
             }
         }
 
-        template<typename Node_t>
-        void PushDescendants(const Node_t root, std::vector<std::string> &names) {
-            for (const auto &node: root->descendants_) {
-                names.push_back(node.first);
-                PushDescendants(node.second, names);
-            }
-        }
-
         template<typename RelationTree_t>
        inline auto getNodePtr(const std::string &name, const RelationTree_t &rt) {
             auto find = rt.plain_nodes_.find(name);
@@ -57,13 +49,18 @@ namespace Timer {
         struct RelationNode {
             std::unordered_map<std::string, std::shared_ptr<RelationNode>> descendants_{};
             std::weak_ptr<RelationNode> parent;
-            explicit RelationNode(const std::shared_ptr<RelationNode>& father_ptr) : parent(father_ptr) {};
+            explicit RelationNode(const std::shared_ptr<RelationNode>& father_ptr);
+            ~RelationNode();
         };
 
         struct RelationTree {
             std::shared_ptr<RelationNode> root_{new RelationNode{nullptr}};
             std::map<std::string, std::shared_ptr<RelationNode>> plain_nodes_{};
         } rt{};
+
+        RelationNode::RelationNode(const std::shared_ptr<RelationNode>& father_ptr) : parent(father_ptr) {};
+
+        RelationNode::~RelationNode() { for (const auto &node : descendants_) rt.plain_nodes_.erase(node.first); }
 
         std::map<void *, TIMER_RECORD_TIME_TYPE> duration_{};
         std::map<void *, std::chrono::time_point<std::chrono::system_clock>> start_time_{};
@@ -108,11 +105,9 @@ namespace Timer {
     void Timer::Erase(const std::string &name) {
         auto find = rt.plain_nodes_.find(name);
         ExistChecker(find, rt.plain_nodes_.end(), name);
-        std::vector<std::string> nodes_to_be_delete{name};
-        PushDescendants(find->second, nodes_to_be_delete);
+        std::vector<std::weak_ptr<RelationNode>> vs;
         find->second->parent.lock()->descendants_.erase(name);
-        for (const auto &descendants_name: nodes_to_be_delete)
-            rt.plain_nodes_.erase(descendants_name);
+        rt.plain_nodes_.erase(name);
     }
 
     void Timer::ResetAll() {
