@@ -114,7 +114,7 @@ Since we want to timing functions, we modify `main.cpp` and `utils.cpp` as follo
 void run();
 
 int main() {
-    Timer::StartRecording("main", Timer::s);
+    Timer::StartRecording("main");
     run();
     Timer::StopRecording("main");
     Timer::ReportAll();
@@ -127,13 +127,13 @@ int main() {
 #include "Timer.h"
 
 void sleep100ms() {
-    Timer::StartRecording("run-sleep100ms", "run");
+    Timer::StartRecording("run-sleep100ms", "run", Timer::us);
     std::this_thread::sleep_for(std::chrono::milliseconds{100});
     Timer::StopRecording("run-sleep100ms");
 }
 
 void sleep200ms() {
-    Timer::StartRecording("run-sleep200ms", "run");
+    Timer::StartRecording("run-sleep200ms", "run", Timer::us);
     std::this_thread::sleep_for(std::chrono::milliseconds{200});
     Timer::StopRecording("run-sleep200ms");
 }
@@ -165,8 +165,8 @@ target_link_libraries(main Timer)
 The result would be:
 ```
 Report {all} in the recorder (-1 means recorder not stopped):
-|-main: 0s
+|-main: 300ms
      |--run: 300ms
-          |run-sleep100ms: 100ms
-          |run-sleep200ms: 200ms
+          |run-sleep100ms: 100109us
+          |run-sleep200ms: 200127us
 ```
