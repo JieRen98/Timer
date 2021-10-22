@@ -9,35 +9,35 @@
 #include <map>
 #include <memory>
 
-namespace Timer {
-    struct Timer {
-        template<typename ...Args>
-        Timer(Args&& ...args) = delete;
 
-        enum TimeUnit_t { ns, us, ms, s, m, h };
+struct Timer {
+    template<typename ...Args>
+    Timer(Args&& ...args) = delete;
 
-        static void SetTimeUnit(TimeUnit_t time_unit) { time_unit_ = time_unit; };
+    enum TimeUnit_t { ns, us, ms, s, m, h };
 
-        static void StartRecording(const std::string &name, TimeUnit_t=time_unit_);
+    static void SetTimeUnit(TimeUnit_t time_unit) { time_unit_ = time_unit; };
 
-        static void StartRecording(const std::string &name, const std::string &father_name, TimeUnit_t=time_unit_);
+    static void StartRecording(const std::string &name, TimeUnit_t=time_unit_);
 
-        static void StopRecording(const std::string &name);
+    static void StartRecording(const std::string &name, const std::string &father_name, TimeUnit_t=time_unit_);
 
-        static void Erase(const std::string &name);
+    static void StopRecording(const std::string &name);
 
-        static void ResetAll();
+    static void Erase(const std::string &name);
 
-        static void Reset(const std::string &name);
+    static void ResetAll();
 
-        static void ReportAll();
+    static void Reset(const std::string &name);
 
-        static void Report(const std::string &name);
+    static void ReportAll();
 
-    private:
-        // default is "ms"
-        static TimeUnit_t time_unit_;
-    };
-}
+    static void Report(const std::string &name);
+
+private:
+    // default is "ms"
+    static TimeUnit_t time_unit_;
+};
+
 
 #endif //TIMER_TIMER_H
