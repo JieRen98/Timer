@@ -5,6 +5,10 @@
 #ifndef TIMER_TIMER_H
 #define TIMER_TIMER_H
 
+#ifndef USE_TIMER
+#define USE_TIMER true
+#endif
+
 #if USE_TIMER
 #include <chrono>
 #include <map>
