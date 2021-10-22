@@ -9,14 +9,13 @@
 #include <map>
 #include <memory>
 
-
 struct Timer {
     template<typename ...Args>
     Timer(Args&& ...args) = delete;
 
     enum TimeUnit_t { ns, us, ms, s, m, h };
 
-    static void SetTimeUnit(TimeUnit_t time_unit) { time_unit_ = time_unit; };
+    static void SetDefaultTimeUnit(TimeUnit_t time_unit);
 
     static void StartRecording(const std::string &name, TimeUnit_t=time_unit_);
 

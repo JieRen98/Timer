@@ -292,6 +292,8 @@ namespace {
     }
 }
 
+void Timer::SetDefaultTimeUnit(TimeUnit_t time_unit) { time_unit_ = time_unit; }
+
 void Timer::StartRecording(const std::string &name, const TimeUnit_t time_unit) {
     if (RelationTree::plain_nodes_.find(name) == RelationTree::plain_nodes_.end()) {
         std::unique_ptr<RelationTree::RelationNode> node_ptr{
