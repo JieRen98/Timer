@@ -12,8 +12,7 @@
 #include <string>
 
 struct Timer {
-    template<typename ...Args>
-    Timer(Args&& ...args) = delete;
+    Timer() = delete;
 
     enum TimeUnit_t { ns, us, ms, s, m, h };
 

@@ -11,7 +11,11 @@
 
 namespace {
     struct RelationTree {
+        RelationTree() = delete;
+
         struct RelationNode {
+            RelationNode() = delete;
+
             std::map<std::string, std::unique_ptr<RelationNode>> descendants_{};
             const RelationNode *parent;
 
