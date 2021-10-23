@@ -39,7 +39,7 @@ namespace {
     template<typename Iterator>
     inline void ExistChecker(const Iterator &find, const Iterator &end, const std::string &name) {
         if (find == end)
-            throw std::runtime_error("name_ {" + name + "} not exist");
+            throw std::runtime_error("name {" + name + "} not exist");
     }
 
     template<typename Iterator>
@@ -310,7 +310,7 @@ void Timer::__StartRecording(const std::string &name, TimeUnit_t time_unit) {
         time_unit_map_.emplace(node_ptr.get(), time_unit);
         RelationTree::root_->descendants_.emplace(name, std::move(node_ptr));
     } else if (RelationTree::root_->descendants_.find(name) == RelationTree::root_->descendants_.end()) {
-        throw std::runtime_error("name_ {" + name + "} duplicated");
+        throw std::runtime_error("name {" + name + "} duplicated");
     }
     start_time_[RelationTree::getNodePtr(name)] = std::chrono::system_clock::now();
 }
@@ -326,7 +326,7 @@ void Timer::__StartRecording(const std::string &name, const std::string &father_
         const_cast<RelationTree::RelationNode *>(father_find->second)->descendants_.emplace(name,
                                                                                             std::move(node_ptr));
     } else if (father_find->second->descendants_.find(name) == father_find->second->descendants_.end()) {
-        throw std::runtime_error("name_ {" + name + "} duplicated");
+        throw std::runtime_error("name {" + name + "} duplicated");
     }
     start_time_[RelationTree::getNodePtr(name)] = std::chrono::system_clock::now();
 }
