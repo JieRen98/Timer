@@ -10,7 +10,7 @@ The straightforward design is that I use a global static timer to save and updat
 I use the timer test the program performance, but at the release stage, maybe there is no need to do any timing.
 I hope I have some options that may turn off the timer, if directly optimized out by compiler would be the best.
 
-Based on such demand, I allow user use the macro `USE_TIMER` to decide whether the timing codes would be compiled.
+Based on such demand, I allow user use the macro `TIMER_USE_TIMER` to decide whether the timing codes would be compiled.
 Notably, I should use `-O1` compiler instruction to totally optimize out the timing codes.
 ### API hiding
 I want only expose APIs that are really used in practice and hide all the structure that may be experimental.
@@ -28,7 +28,7 @@ Just modify the `CMakeLists.txt` every `add_library` or `add_executable`, add `T
 Origin:
 ```cmake
 # some codes...
-add_definitions(-DUSE_TIMER=true)
+add_definitions(-DTIMER_USE_TIMER=true)
 add_library(XXX_lib 1.cpp 2.cpp ...)
 add_executable(XXX_obj 1.cpp 2.cpp ...)
 # some codes...
@@ -36,7 +36,7 @@ add_executable(XXX_obj 1.cpp 2.cpp ...)
 Modify to:
 ```cmake
 # some codes...
-add_definitions(-DUSE_TIMER=true)
+add_definitions(-DTIMER_USE_TIMER=true)
 add_library(XXX_lib Timer.cpp 1.cpp 2.cpp ...)
 add_executable(XXX_obj Timer.cpp 1.cpp 2.cpp ...)
 # some codes...
@@ -57,7 +57,7 @@ Modify to
 add_library(XXX_lib 1.cpp 2.cpp ...)
 add_executable(XXX_obj 1.cpp 2.cpp ...)
 
-add_definitions(-DUSE_TIMER=true)
+add_definitions(-DTIMER_USE_TIMER=true)
 add_library(Timer SHARED Timer.cpp)
 target_link_libraries(XXX_lib Timer)
 target_link_libraries(XXX_obj Timer)
@@ -157,7 +157,7 @@ add_library(utils SHARED utils.cpp)
 add_executable(main main.cpp)
 target_link_libraries(main utils)
 
-add_definitions(-DUSE_TIMER=true)
+add_definitions(-DTIMER_USE_TIMER=true)
 add_library(Timer SHARED Timer.cpp)
 target_link_libraries(utils Timer)
 target_link_libraries(main Timer)
