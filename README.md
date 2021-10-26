@@ -165,8 +165,8 @@ target_link_libraries(main Timer)
 The result would be:
 ```
 Report {all} in the recorder (-1 means recorder not stopped):
-|-main: 300ms
-     |--run: 300ms
-          |run-sleep100ms: 100109us
-          |run-sleep200ms: 200127us
+|-main: 1 call(s), average 600ms
+     |--run: 2 call(s), average 300ms, ratio 1
+          |run-sleep200ms: 2 call(s), average 200251us, ratio 0.6675
+          |run-sleep100ms: 2 call(s), average 100137us, ratio 0.3338
 ```
