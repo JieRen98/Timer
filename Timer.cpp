@@ -81,7 +81,7 @@ namespace {
 
     template<>
     struct TimeUnitWrapper<Timer::ns> {
-        typedef std::chrono::nanoseconds duration_t;
+        typedef std::pair<int64_t, std::chrono::nanoseconds> duration_t;
         static const std::string name_;
         static std::unordered_map<const RelationTree::RelationNode *, duration_t> duration_;
     };
@@ -90,7 +90,7 @@ namespace {
 
     template<>
     struct TimeUnitWrapper<Timer::us> {
-        typedef std::chrono::microseconds duration_t;
+        typedef std::pair<int64_t, std::chrono::microseconds> duration_t;
         static const std::string name_;
         static std::unordered_map<const RelationTree::RelationNode *, duration_t> duration_;
     };
@@ -99,7 +99,7 @@ namespace {
 
     template<>
     struct TimeUnitWrapper<Timer::ms> {
-        typedef std::chrono::milliseconds duration_t;
+        typedef std::pair<int64_t, std::chrono::milliseconds> duration_t;
         static const std::string name_;
         static std::unordered_map<const RelationTree::RelationNode *, duration_t> duration_;
     };
@@ -108,7 +108,7 @@ namespace {
 
     template<>
     struct TimeUnitWrapper<Timer::s> {
-        typedef std::chrono::seconds duration_t;
+        typedef std::pair<int64_t, std::chrono::seconds> duration_t;
         static const std::string name_;
         static std::unordered_map<const RelationTree::RelationNode *, duration_t> duration_;
     };
@@ -117,7 +117,7 @@ namespace {
 
     template<>
     struct TimeUnitWrapper<Timer::m> {
-        typedef std::chrono::minutes duration_t;
+        typedef std::pair<int64_t, std::chrono::minutes> duration_t;
         static const std::string name_;
         static std::unordered_map<const RelationTree::RelationNode *, duration_t> duration_;
     };
@@ -126,7 +126,7 @@ namespace {
 
     template<>
     struct TimeUnitWrapper<Timer::h> {
-        typedef std::chrono::hours duration_t;
+        typedef std::pair<int64_t, std::chrono::hours> duration_t;
         static const std::string name_;
         static std::unordered_map<const RelationTree::RelationNode *, duration_t> duration_;
     };
@@ -135,27 +135,30 @@ namespace {
 
     class DurationManager {
         template<typename Duration_t, typename Node_t>
-        static int64_t
+        static auto
         getCountWrapper(const std::unordered_map<const Node_t *, Duration_t> &duration, const Node_t *node_ptr) {
+            typedef std::pair<int64_t, int64_t> Ret_t;
             auto find = duration.find(node_ptr);
             ExistCheckerNoThrow(find, duration.end());
-            return ExistCheckerNoThrow(find, duration.end()) ? find->second.count() : -1;
+            return ExistCheckerNoThrow(find, duration.end()) ? Ret_t{find->second.first, find->second.second.count()} : Ret_t{1,-1};
         }
 
         template<typename Duration_t, typename TimePoint_t, typename Node_t>
         static void
-        insertRecordWrapper(std::unordered_map<const Node_t *, Duration_t> &duration, TimePoint_t &&start, TimePoint_t &&end,
+        insertRecordWrapper(std::unordered_map<const Node_t *, std::pair<int64_t, Duration_t>> &duration, TimePoint_t &&start, TimePoint_t &&end,
                             const Node_t *node_ptr) {
             const auto duration_find = duration.find(node_ptr);
             if (duration_find == duration.end())
-                duration.emplace(node_ptr, std::chrono::duration_cast<Duration_t>(end - start));
-            else
-                duration_find->second += std::chrono::duration_cast<Duration_t>(end - start);
+                duration.emplace(node_ptr, std::pair<int64_t, Duration_t>{1, std::chrono::duration_cast<Duration_t>(end - start)});
+            else {
+                duration_find->second.first++;
+                duration_find->second.second += std::chrono::duration_cast<Duration_t>(end - start);
+            }
         }
 
         template<typename Duration_t, typename Node_t>
-        static void ResetWrapper(std::unordered_map<const Node_t *, Duration_t> &duration, const Node_t *node_ptr) {
-            duration.find(node_ptr)->second = Duration_t::zero();
+        static void ResetWrapper(std::unordered_map<const Node_t *, std::pair<int64_t, Duration_t>> &duration, const Node_t *node_ptr) {
+            duration.find(node_ptr)->second.second = Duration_t::zero();
         }
 
     public:
@@ -176,7 +179,7 @@ namespace {
             }
         }
 
-        static int64_t getCount(Timer::TimeUnit_t time_unit, const RelationTree::RelationNode *node_ptr) {
+        static auto getCount(Timer::TimeUnit_t time_unit, const RelationTree::RelationNode *node_ptr) {
             switch (time_unit) {
                 case Timer::ns:
                     return getCountWrapper(TimeUnitWrapper<Timer::ns>::duration_, node_ptr);
@@ -282,6 +285,7 @@ namespace {
     void PrintOneNode(const Node_t *root, const std::string &name, int level) {
         if (level >= 0) {
             Timer::TimeUnit_t time_unit{time_unit_map_.find(root)->second};
+            auto count_pair = DurationManager::getCount(time_unit, root);
             std::cout
                     << std::setw(5 * level + 1)
                     << std::setfill(' ')
@@ -290,7 +294,9 @@ namespace {
                     << std::setfill('-')
                     << name
                     << ": "
-                    << DurationManager::getCount(time_unit, root)
+                    << count_pair.first
+                    << " call(s), average "
+                    << count_pair.second / count_pair.first
                     << DurationManager::getName(time_unit)
                     << std::endl;
         }
