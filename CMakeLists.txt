@@ -1,1 +1,1 @@
-add_library(Timer SHARED Timer.cpp test/utils.cpp)
+add_library(Timer SHARED Timer.cpp)
