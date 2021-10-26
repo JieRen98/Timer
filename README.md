@@ -1,5 +1,5 @@
 # Timer
-A powerful C++ timer, requires C++14 or later standard.
+A powerful C++ timer, compiler is required to support C++14 or later standard.
 
 ## Concepts
 ### Not invade the target program API
