@@ -8,6 +8,7 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <cmath>
 #include "Timer.h"
 
 namespace {
@@ -140,16 +141,19 @@ namespace {
             typedef std::pair<int64_t, int64_t> Ret_t;
             auto find = duration.find(node_ptr);
             ExistCheckerNoThrow(find, duration.end());
-            return ExistCheckerNoThrow(find, duration.end()) ? Ret_t{find->second.first, find->second.second.count()} : Ret_t{1,-1};
+            return ExistCheckerNoThrow(find, duration.end()) ? Ret_t{find->second.first, find->second.second.count()}
+                                                             : Ret_t{1, -1};
         }
 
         template<typename Duration_t, typename TimePoint_t, typename Node_t>
         static void
-        insertRecordWrapper(std::unordered_map<const Node_t *, std::pair<int64_t, Duration_t>> &duration, TimePoint_t &&start, TimePoint_t &&end,
+        insertRecordWrapper(std::unordered_map<const Node_t *, std::pair<int64_t, Duration_t>> &duration,
+                            TimePoint_t &&start, TimePoint_t &&end,
                             const Node_t *node_ptr) {
             const auto duration_find = duration.find(node_ptr);
             if (duration_find == duration.end())
-                duration.emplace(node_ptr, std::pair<int64_t, Duration_t>{1, std::chrono::duration_cast<Duration_t>(end - start)});
+                duration.emplace(node_ptr, std::pair<int64_t, Duration_t>{1, std::chrono::duration_cast<Duration_t>(
+                        end - start)});
             else {
                 duration_find->second.first++;
                 duration_find->second.second += std::chrono::duration_cast<Duration_t>(end - start);
@@ -157,7 +161,8 @@ namespace {
         }
 
         template<typename Duration_t, typename Node_t>
-        static void ResetWrapper(std::unordered_map<const Node_t *, std::pair<int64_t, Duration_t>> &duration, const Node_t *node_ptr) {
+        static void ResetWrapper(std::unordered_map<const Node_t *, std::pair<int64_t, Duration_t>> &duration,
+                                 const Node_t *node_ptr) {
             duration.find(node_ptr)->second.second = Duration_t::zero();
         }
 
@@ -281,11 +286,21 @@ namespace {
         }
     };
 
+    inline long double CastUnit(int64_t count, Timer::TimeUnit_t from, Timer::TimeUnit_t to) {
+        long double ratio = std::pow(10., 3 * (from - to));
+        return ratio * count;
+    }
+
     template<typename Node_t>
-    void PrintOneNode(const Node_t *root, const std::string &name, int level) {
+    void
+    PrintOneNode(int64_t father_count, Timer::TimeUnit_t time_unit_father, const Node_t *root, const std::string &name,
+                 int level) {
+        Timer::TimeUnit_t time_unit;
+        int64_t count;
         if (level >= 0) {
-            Timer::TimeUnit_t time_unit{time_unit_map_.find(root)->second};
+            time_unit = time_unit_map_.find(root)->second;
             auto count_pair = DurationManager::getCount(time_unit, root);
+            count = count_pair.second;
             std::cout
                     << std::setw(5 * level + 1)
                     << std::setfill(' ')
@@ -296,13 +311,22 @@ namespace {
                     << ": "
                     << count_pair.first
                     << " call(s), average "
-                    << count_pair.second / count_pair.first
-                    << DurationManager::getName(time_unit)
-                    << std::endl;
+                    << count / count_pair.first
+                    << DurationManager::getName(time_unit);
+            if (level > 0) {
+                if (father_count == -1)
+                    std::cout << ", ratio " << "N/A";
+                else
+                    std::cout
+                            << ", ratio "
+                            << std::setprecision(4)
+                            << count / CastUnit(father_count, time_unit_father, time_unit);
+            }
+            std::cout << std::endl;
         }
-        
+
         for (const auto &node: root->descendants_)
-            PrintOneNode(node.second.get(), node.first, level + 1);
+            PrintOneNode(count, time_unit, node.second.get(), node.first, level + 1);
     }
 }
 
@@ -363,14 +387,14 @@ void Timer::__Reset(const std::string &name) {
 
 void Timer::__ReportAll() {
     std::cout << "Report {all} in the recorder (-1 means recorder not stopped):" << std::endl;
-    PrintOneNode(RelationTree::root_.get(), "root", -1);
+    PrintOneNode(0, s, RelationTree::root_.get(), "root", -1);
 }
 
 void Timer::__Report(const std::string &name) {
     auto find = RelationTree::plain_nodes_.find(name);
     ExistChecker(find, RelationTree::plain_nodes_.end(), name);
     std::cout << "Report {" + name + "} in the recorder (-1 means recorder not stopped):" << std::endl;
-    PrintOneNode(find->second, name, 0);
+    PrintOneNode(0, s, find->second, name, 0);
 }
 
 Timer::TimeUnit_t Timer::default_time_unit_{ms};
