@@ -299,6 +299,9 @@ namespace {
                             int level) {
         Timer::TimeUnit_t time_unit;
         int64_t count;
+#if __cplusplus > 201703L
+      [[likely]]
+#endif
         if (level >= 0) {
             time_unit = time_unit_map_.find(root)->second;
             auto count_pair = DurationManager::getCount(time_unit, root);
@@ -315,6 +318,9 @@ namespace {
                     << " call(s), average "
                     << count / count_pair.first
                     << DurationManager::getName(time_unit);
+#if __cplusplus > 201703L
+            [[likely]]
+#endif
             if (level > 0) {
                 if (father_count == -1)
                     std::cout << ", ratio " << "N/A";
