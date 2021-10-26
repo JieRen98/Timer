@@ -292,9 +292,11 @@ namespace {
     }
 
     template<typename Node_t>
-    void
-    PrintOneNode(int64_t father_count, Timer::TimeUnit_t time_unit_father, const Node_t *root, const std::string &name,
-                 int level) {
+    void PrintOneNodeHelper(int64_t father_count,
+                            Timer::TimeUnit_t time_unit_father,
+                            const Node_t *root,
+                            const std::string &name,
+                            int level) {
         Timer::TimeUnit_t time_unit;
         int64_t count;
         if (level >= 0) {
@@ -326,8 +328,14 @@ namespace {
         }
 
         for (const auto &node: root->descendants_)
-            PrintOneNode(count, time_unit, node.second.get(), node.first, level + 1);
+            PrintOneNodeHelper(count, time_unit, node.second.get(), node.first, level + 1);
     }
+
+    template<typename ...Args>
+    void PrintOneNode(Args&& ...args) {
+        PrintOneNodeHelper(0, Timer::s, std::forward<Args>(args)...);
+    }
+
 }
 
 void Timer::__SetDefaultTimeUnit(TimeUnit_t default_time_unit) { default_time_unit_ = default_time_unit; }
@@ -387,14 +395,14 @@ void Timer::__Reset(const std::string &name) {
 
 void Timer::__ReportAll() {
     std::cout << "Report {all} in the recorder (-1 means recorder not stopped):" << std::endl;
-    PrintOneNode(0, s, RelationTree::root_.get(), "root", -1);
+    PrintOneNode(RelationTree::root_.get(), "root", -1);
 }
 
 void Timer::__Report(const std::string &name) {
     auto find = RelationTree::plain_nodes_.find(name);
     ExistChecker(find, RelationTree::plain_nodes_.end(), name);
     std::cout << "Report {" + name + "} in the recorder (-1 means recorder not stopped):" << std::endl;
-    PrintOneNode(0, s, find->second, name, 0);
+    PrintOneNode(find->second, name, 0);
 }
 
 Timer::TimeUnit_t Timer::default_time_unit_{ms};
