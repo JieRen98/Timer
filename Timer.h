@@ -22,7 +22,7 @@ struct Timer final {
 
     static void StartRecording(const std::string &name, const std::string &father_name, TimeUnit_t time_unit = default_time_unit_) { if (TIMER_USE_TIMER) __StartRecording(name, father_name, time_unit); };
 
-    static void StopRecording(const std::string &name) { if (TIMER_USE_TIMER) __StopRecording(name); };
+    static std::pair<std::size_t, std::size_t> StopRecording(const std::string &name) { if (TIMER_USE_TIMER) return __StopRecording(name); };
 
     static void Erase(const std::string &name) { if (TIMER_USE_TIMER) __Erase(name); };
 
@@ -32,7 +32,7 @@ struct Timer final {
 
     static void ReportAll() { if (TIMER_USE_TIMER) __ReportAll(); };
 
-    static void Report(const std::string &name) { if (TIMER_USE_TIMER) __Report(name); };
+    static void Report(const std::string &name, bool recursive=true) { if (TIMER_USE_TIMER) __Report(name, recursive); };
 
 private:
     static void __SetDefaultTimeUnit(TimeUnit_t default_time_unit);
@@ -41,7 +41,7 @@ private:
 
     static void __StartRecording(const std::string &name, const std::string &father_name, TimeUnit_t time_unit);
 
-    static void __StopRecording(const std::string &name);
+    static std::pair<std::size_t, std::size_t> __StopRecording(const std::string &name);
 
     static void __Erase(const std::string &name);
 
@@ -51,7 +51,7 @@ private:
 
     static void __ReportAll();
 
-    static void __Report(const std::string &name);
+    static void __Report(const std::string &name, bool recursive=false);
 
     // default is "ms"
     static TimeUnit_t default_time_unit_;

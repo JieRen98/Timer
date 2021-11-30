@@ -146,18 +146,20 @@ namespace {
         }
 
         template<typename Duration_t, typename TimePoint_t, typename Node_t>
-        static void
+        static auto
         insertRecordWrapper(std::unordered_map<const Node_t *, std::pair<int64_t, Duration_t>> &duration,
                             TimePoint_t &&start, TimePoint_t &&end,
                             const Node_t *node_ptr) {
-            const auto duration_find = duration.find(node_ptr);
-            if (duration_find == duration.end())
-                duration.emplace(node_ptr, std::pair<int64_t, Duration_t>{1, std::chrono::duration_cast<Duration_t>(
-                        end - start)});
+            auto duration_find = duration.find(node_ptr);
+            const auto duration_{std::chrono::duration_cast<Duration_t>(end - start)};
+            if (duration_find == duration.end()) {
+                duration_find = duration.emplace(node_ptr, std::pair<int64_t, Duration_t>{1, duration_}).first;
+            }
             else {
                 duration_find->second.first++;
-                duration_find->second.second += std::chrono::duration_cast<Duration_t>(end - start);
+                duration_find->second.second += duration_;
             }
+            return std::pair<std::size_t, std::size_t>{duration_.count(), duration_find->second.second.count()};
         }
 
         template<typename Duration_t, typename Node_t>
@@ -202,33 +204,27 @@ namespace {
         }
 
         template<typename TimePoint_t>
-        static void
+        static auto
         insertRecord(TimePoint_t &&start, TimePoint_t &&end, const RelationTree::RelationNode *node_ptr) {
             switch (time_unit_map_.find(node_ptr)->second) {
                 case Timer::ns:
-                    insertRecordWrapper(TimeUnitWrapper<Timer::ns>::duration_, std::forward<TimePoint_t>(start),
+                    return insertRecordWrapper(TimeUnitWrapper<Timer::ns>::duration_, std::forward<TimePoint_t>(start),
                                         std::forward<TimePoint_t>(end), node_ptr);
-                    return;
                 case Timer::us:
-                    insertRecordWrapper(TimeUnitWrapper<Timer::us>::duration_, std::forward<TimePoint_t>(start),
+                    return insertRecordWrapper(TimeUnitWrapper<Timer::us>::duration_, std::forward<TimePoint_t>(start),
                                         std::forward<TimePoint_t>(end), node_ptr);
-                    return;
                 case Timer::ms:
-                    insertRecordWrapper(TimeUnitWrapper<Timer::ms>::duration_, std::forward<TimePoint_t>(start),
+                    return insertRecordWrapper(TimeUnitWrapper<Timer::ms>::duration_, std::forward<TimePoint_t>(start),
                                         std::forward<TimePoint_t>(end), node_ptr);
-                    return;
                 case Timer::s:
-                    insertRecordWrapper(TimeUnitWrapper<Timer::s>::duration_, std::forward<TimePoint_t>(start),
+                    return insertRecordWrapper(TimeUnitWrapper<Timer::s>::duration_, std::forward<TimePoint_t>(start),
                                         std::forward<TimePoint_t>(end), node_ptr);
-                    return;
                 case Timer::m:
-                    insertRecordWrapper(TimeUnitWrapper<Timer::m>::duration_, std::forward<TimePoint_t>(start),
+                    return insertRecordWrapper(TimeUnitWrapper<Timer::m>::duration_, std::forward<TimePoint_t>(start),
                                         std::forward<TimePoint_t>(end), node_ptr);
-                    return;
                 case Timer::h:
-                    insertRecordWrapper(TimeUnitWrapper<Timer::h>::duration_, std::forward<TimePoint_t>(start),
+                    return insertRecordWrapper(TimeUnitWrapper<Timer::h>::duration_, std::forward<TimePoint_t>(start),
                                         std::forward<TimePoint_t>(end), node_ptr);
-                    return;
             }
         }
 
@@ -296,7 +292,8 @@ namespace {
                             Timer::TimeUnit_t time_unit_father,
                             const Node_t *root,
                             const std::string &name,
-                            int level) {
+                            int level,
+                            bool recursive) {
         Timer::TimeUnit_t time_unit;
         int64_t count;
 #if __cplusplus > 201703L
@@ -315,7 +312,10 @@ namespace {
                     << name
                     << ": "
                     << count_pair.first
-                    << " call(s), average "
+                    << " call(s), total "
+                    << count
+                    << DurationManager::getName(time_unit)
+                    << ", average "
                     << count / count_pair.first
                     << DurationManager::getName(time_unit);
 #if __cplusplus > 201703L
@@ -333,8 +333,10 @@ namespace {
             std::cout << std::endl;
         }
 
+        if (!recursive)
+            return;
         for (const auto &node: root->descendants_)
-            PrintOneNodeHelper(count, time_unit, node.second.get(), node.first, level + 1);
+            PrintOneNodeHelper(count, time_unit, node.second.get(), node.first, level + 1, recursive);
     }
 
     template<typename ...Args>
@@ -375,11 +377,11 @@ void Timer::__StartRecording(const std::string &name, const std::string &father_
     start_time_[RelationTree::getNodePtr(name)] = std::chrono::system_clock::now();
 }
 
-void Timer::__StopRecording(const std::string &name) {
+std::pair<std::size_t, std::size_t> Timer::__StopRecording(const std::string &name) {
     const RelationTree::RelationNode *node_ptr = RelationTree::getNodePtr(name);
     auto end_time_point = std::chrono::system_clock::now();
     ExistChecker(start_time_.find(node_ptr), start_time_.end(), name);
-    DurationManager::insertRecord(start_time_.find(node_ptr)->second, end_time_point, node_ptr);
+    return DurationManager::insertRecord(start_time_.find(node_ptr)->second, end_time_point, node_ptr);
 }
 
 void Timer::__Erase(const std::string &name) {
@@ -401,14 +403,14 @@ void Timer::__Reset(const std::string &name) {
 
 void Timer::__ReportAll() {
     std::cout << "Report {all} in the recorder (-1 means recorder not stopped):" << std::endl;
-    PrintOneNode(RelationTree::root_.get(), "root", -1);
+    PrintOneNode(RelationTree::root_.get(), "root", -1, true);
 }
 
-void Timer::__Report(const std::string &name) {
+void Timer::__Report(const std::string &name, bool recursive) {
     auto find = RelationTree::plain_nodes_.find(name);
     ExistChecker(find, RelationTree::plain_nodes_.end(), name);
     std::cout << "Report {" + name + "} in the recorder (-1 means recorder not stopped):" << std::endl;
-    PrintOneNode(find->second, name, 0);
+    PrintOneNode(find->second, name, 0, recursive);
 }
 
 Timer::TimeUnit_t Timer::default_time_unit_{ms};
